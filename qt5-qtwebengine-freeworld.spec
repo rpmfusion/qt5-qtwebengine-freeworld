@@ -32,7 +32,7 @@
 Summary: Qt5 - QtWebEngine components (freeworld version)
 Name:    qt5-qtwebengine-freeworld
 Version: 5.6.3
-Release: 0.1.%{snapdate}git%(c=%{snaphash}; echo ${c:0:14})%{?dist}
+Release: 0.2.%{snapdate}git%(c=%{snaphash}; echo ${c:0:14})%{?dist}
 
 %global major_minor %(echo %{version} | cut -d. -f-2)
 %global major %(echo %{version} | cut -d. -f1)
@@ -94,6 +94,14 @@ Patch11: qtwebengine-opensource-src-5.7.1-skia-neon.patch
 # webrtc: backport https://codereview.webrtc.org/1820133002/ "Implement CPU
 # feature detection for ARM Linux." and enable the detection also for Chromium
 Patch12: qtwebengine-opensource-src-5.7.1-webrtc-neon-detect.patch
+
+# security patches from codereview.qt-project.org (Qt Gerrit):
+# [Backport] CVE-2017-5052 - https://codereview.qt-project.org/#/c/200312/
+Patch100: qtwebengine-chromium-CVE-2017-5052.patch
+# [Backport] CVE-2017-5054 - https://codereview.qt-project.org/#/c/200313/
+Patch101: qtwebengine-chromium-CVE-2017-5054.patch
+# Fix broken debug build - https://codereview.qt-project.org/#/c/200401/
+Patch102: qtwebengine-chromium-CVE-2017-5054-debug.patch
 
 # the architectures theoretically supported by the version of V8 used (#1298011)
 # You may need some minor patching to build on one of the secondary
@@ -299,6 +307,9 @@ This version is compiled with support for patent-encumbered codecs enabled.
 
 %prep
 %setup -q -n %{qt_module}-opensource-src-%{version}%{?prerelease:-%{prerelease}}
+%patch100 -p1 -b .CVE-2017-5052
+%patch101 -p1 -b .CVE-2017-5054
+%patch102 -p1 -b .CVE-2017-5054-debug
 %patch0 -p1 -b .linux-pri
 %patch1 -p1 -b .no-icudtl-dat
 %patch2 -p1 -b .fix-extractcflag
@@ -391,6 +402,9 @@ echo "%{_libdir}/%{name}" \
 
 
 %changelog
+* Thu Jul 27 2017 Kevin Kofler <Kevin@tigcc.ticalc.org> - 5.6.3-0.2.20170712gitee719ad313e564
+- Add the backports fixing CVE-2017-5052 and CVE-2017-5054 from Qt Gerrit
+
 * Sun Jul 16 2017 Kevin Kofler <Kevin@tigcc.ticalc.org> - 5.6.3-0.1.20170712gitee719ad313e564
 - Update to 5.6 branch revision ee719ad313e564d4e6f06d74b313ae179169466f
 - Add snapshot_qtwebengine.sh and the FFmpeg cleaning scripts that it runs
