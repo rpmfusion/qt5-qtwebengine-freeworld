@@ -20,7 +20,6 @@
 # need libwebp >= 0.6.0
 %global use_system_libwebp 1
 %global use_system_jsoncpp 1
-%global use_system_re2 1
 %endif
 
 %if 0%{?use_system_libwebp}
@@ -63,7 +62,7 @@
 Summary: Qt5 - QtWebEngine components (freeworld version)
 Name:    qt5-qtwebengine-freeworld
 Version: 5.15.17
-Release: 2%{?dist}
+Release: 3%{?dist}
 
 %global major_minor %(echo %{version} | cut -d. -f-2)
 %global major %(echo %{version} | cut -d. -f1)
@@ -97,8 +96,7 @@ Patch7:  chromium-hunspell-nullptr.patch
 Patch8:  qtwebengine-everywhere-5.15.8-libpipewire-0.3.patch
 # Fix/workaround FTBFS on aarch64 with newer glibc
 Patch24: qtwebengine-everywhere-src-5.11.3-aarch64-new-stat.patch
-# Use Python2
-Patch26: qtwebengine-everywhere-5.15.5-use-python2.patch
+
 Patch32: qtwebengine-skia-missing-includes.patch
 # Fixes for GCC 13
 # https://bugzilla.redhat.com/show_bug.cgi?id=2164993
@@ -109,6 +107,9 @@ Patch35: qt5-qtwebengine-c99.patch
 # Fix build
 Patch61: qtwebengine-5.15.13_p20240322-ninja1.12.patch
 Patch62: fix_build_pdf_extension_util.patch
+Patch63: python3.12-imp.patch            
+Patch64: python3.12-six.patch            
+Patch65: python3.13-pipes.patch
 
 ## Upstream patches:
 
@@ -149,9 +150,6 @@ BuildRequires: libicu-devel >= 65
 %endif
 BuildRequires: libjpeg-devel
 BuildRequires: nodejs
-%if 0%{?use_system_re2}
-BuildRequires: re2-devel
-%endif
 %if 0%{?pipewire}
 BuildRequires:  pkgconfig(libpipewire-0.3)
 %endif
@@ -213,15 +211,8 @@ BuildRequires: pkgconfig(xkbfile)
 ## requires libxml2 built with icu support
 #BuildRequires: pkgconfig(libxslt) pkgconfig(libxml-2.0)
 BuildRequires: perl-interpreter
-# fesco exception to allow python2 use: https://pagure.io/fesco/issue/2208
-# per https://fedoraproject.org/wiki/Changes/RetirePython2#FESCo_exceptions
-# Only the interpreter is needed
-%if 0%{?fedora} > 29 || 0%{?rhel} > 8
-BuildRequires: %{__python2}
-%else
-BuildRequires: python2
-BuildRequires: python2-rpm-macros
-%endif
+BuildRequires: %{__python3}
+BuildRequires: python3-html5lib
 %if 0%{?use_system_libvpx}
 BuildRequires: pkgconfig(vpx) >= 1.8.0
 %endif
@@ -382,7 +373,6 @@ popd
 
 ## upstream patches
 %patch -P24 -p1 -b .aarch64-new-stat
-%patch -P26 -p1 -b .use-python2
 %patch -P32 -p1 -b .skia-missing-includes
 %patch -P34 -p1 -b .gcc-13
 
@@ -390,17 +380,14 @@ popd
 
 %patch -P61 -p1
 %patch -P62 -p1
+%patch -P63 -p1            
+%patch -P64 -p1            
+%patch -P65 -p1
 
 # delete all "toolprefix = " lines from build/toolchain/linux/BUILD.gn, as we
 # never cross-compile in native Fedora RPMs, fixes ARM and aarch64 FTBFS
 sed -i -e '/toolprefix = /d' -e 's/\${toolprefix}//g' \
   src/3rdparty/chromium/build/toolchain/linux/BUILD.gn
-
-%if 0%{?use_system_re2}
-# http://bugzilla.redhat.com/1337585
-# can't just delete, but we'll overwrite with system headers to be on the safe side
-cp -bv /usr/include/re2/*.h src/3rdparty/chromium/third_party/re2/src/re2/
-%endif
 
 %if 0
 #ifarch x86_64
@@ -413,7 +400,7 @@ sed -i -e 's/symbol_level=1/symbol_level=2/g' src/core/config/common.pri
 
 # generate qtwebengine-3rdparty.qdoc, it is missing from the tarball
 pushd src/3rdparty
-%{__python2} chromium/tools/licenses.py \
+%{__python3} chromium/tools/licenses.py \
   --file-template ../../tools/about_credits.tmpl \
   --entry-template ../../tools/about_credits_entry.tmpl \
   credits >../webengine/doc/src/qtwebengine-3rdparty.qdoc
@@ -448,7 +435,7 @@ export NINJA_PATH=%{__ninja}
   %{?system_ffmpeg_flag:QMAKE_EXTRA_ARGS+="%{?system_ffmpeg_flag}"} \
   QMAKE_EXTRA_ARGS+="-proprietary-codecs" \
   %{?use_system_libicu:QMAKE_EXTRA_ARGS+="-system-webengine-icu"} \
-  QMAKE_EXTRA_ARGS+="-webengine-kerberos" \
+  QMAKE_EXTRA_ARGS+="-webengine-kerberos -webengine-python-version python3" \
   %{?pipewire:QMAKE_EXTRA_ARGS+="-webengine-webrtc-pipewire"} \
   .
 
@@ -481,6 +468,9 @@ echo "%{_libdir}/%{name}" \
 
 
 %changelog
+* Mon Sep 02 2024 Leigh Scott <leigh123linux@gmail.com> - 5.15.17-3
+- Use Python 3 and bundled re2
+
 * Fri Aug 02 2024 RPM Fusion Release Engineering <sergiomb@rpmfusion.org> - 5.15.17-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_41_Mass_Rebuild
 
