@@ -62,7 +62,7 @@
 Summary: Qt5 - QtWebEngine components (freeworld version)
 Name:    qt5-qtwebengine-freeworld
 Version: 5.15.17
-Release: 3%{?dist}
+Release: 4%{?dist}
 
 %global major_minor %(echo %{version} | cut -d. -f-2)
 %global major %(echo %{version} | cut -d. -f1)
@@ -468,6 +468,9 @@ echo "%{_libdir}/%{name}" \
 
 
 %changelog
+* Fri Sep 27 2024 Leigh Scott <leigh123linux@gmail.com> - 5.15.17-4
+- Rebuild for qt5
+
 * Mon Sep 02 2024 Leigh Scott <leigh123linux@gmail.com> - 5.15.17-3
 - Use Python 3 and bundled re2
 
