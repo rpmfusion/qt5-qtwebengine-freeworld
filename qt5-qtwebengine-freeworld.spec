@@ -16,18 +16,11 @@
 # For screen sharing on Wayland, currently Fedora only thing - no epel
 #global pipewire 1
 %endif
-%if 0%{?fedora} > 30 || 0%{?epel} > 7
-# need libwebp >= 0.6.0
-%global use_system_libwebp 1
-%global use_system_jsoncpp 1
-%endif
 
-%if 0%{?use_system_libwebp}
 # only supported when using also libwebp from the system (see configure.json)
 %if 0%{?fedora} < 36
 # only FFmpeg 4.4 is currently supported, not 5.0
 %global use_system_ffmpeg 1
-%endif
 %endif
 
 %if 0%{?fedora} > 32 || 0%{?rhel} > 8
@@ -61,8 +54,8 @@
 
 Summary: Qt5 - QtWebEngine components (freeworld version)
 Name:    qt5-qtwebengine-freeworld
-Version: 5.15.17
-Release: 5%{?dist}
+Version: 5.15.18
+Release: 1%{?dist}
 
 %global major_minor %(echo %{version} | cut -d. -f-2)
 %global major %(echo %{version} | cut -d. -f1)
@@ -70,7 +63,8 @@ Release: 5%{?dist}
 # See LICENSE.GPL LICENSE.LGPL LGPL_EXCEPTION.txt, for details
 # See also http://qt-project.org/doc/qt-5.0/qtdoc/licensing.html
 # The other licenses are from Chromium and the code it bundles
-License: (LGPLv2 with exceptions or GPLv3 with exceptions) and BSD and LGPLv2+ and ASL 2.0 and IJG and MIT and GPLv2+ and ISC and OpenSSL and (MPLv1.1 or GPLv2 or LGPLv2)
+# Automatically converted from old format: (LGPLv2 with exceptions or GPLv3 with exceptions) and BSD and LGPLv2+ and ASL 2.0 and IJG and MIT and GPLv2+ and ISC and OpenSSL and (MPLv1.1 or GPLv2 or LGPLv2) - review is highly recommended.
+License: (LGPL-2.0-or-later WITH FLTK-exception OR LicenseRef-Callaway-GPLv3-with-exceptions) AND LicenseRef-Callaway-BSD AND LicenseRef-Callaway-LGPLv2+ AND Apache-2.0 AND IJG AND LicenseRef-Callaway-MIT AND GPL-2.0-or-later AND ISC AND OpenSSL AND (LicenseRef-Callaway-MPLv1.1 OR GPL-2.0-only OR LicenseRef-Callaway-LGPLv2)
 URL:     http://www.qt.io
 # generated using qtwebengine-release.sh
 Source0: qtwebengine-everywhere-src-%{version}.tar.xz
@@ -96,21 +90,21 @@ Patch7:  chromium-hunspell-nullptr.patch
 Patch8:  qtwebengine-everywhere-5.15.8-libpipewire-0.3.patch
 # Fix/workaround FTBFS on aarch64 with newer glibc
 Patch24: qtwebengine-everywhere-src-5.11.3-aarch64-new-stat.patch
-
 Patch32: qtwebengine-skia-missing-includes.patch
-# Fixes for GCC 13
-# https://bugzilla.redhat.com/show_bug.cgi?id=2164993
 Patch34: qtwebengine-fix-build.patch
 # https://src.fedoraproject.org/rpms/qt5-qtwebengine/c/628adfbb0613c892b91689d0db85de631d04fdae?branch=rawhide
 Patch35: qt5-qtwebengine-c99.patch
 
 # Fix build
-Patch61: qtwebengine-5.15.13_p20240322-ninja1.12.patch
-Patch62: fix_build_pdf_extension_util.patch
-Patch63: python3.12-imp.patch            
-Patch64: python3.12-six.patch            
-Patch65: python3.13-pipes.patch
+Patch70: qtwebengine-5.15.13_p20240322-ninja1.12.patch
+Patch71: fix_build_pdf_extension_util.patch
+Patch72: python3.12-imp.patch
+Patch73: python3.12-six.patch
+Patch74: python3.13-pipes.patch
 
+# Fix building with ICU 75
+# https://gitlab.archlinux.org/archlinux/packaging/packages/qt5-webengine/-/blob/97c4d298f/qt5-webengine-icu-75.patch
+Patch80: qtwebengine-icu75.patch
 ## Upstream patches:
 
 %if 0%{?bootstrap}
@@ -161,32 +155,18 @@ BuildRequires: pkgconfig(fontconfig)
 BuildRequires: pkgconfig(freetype2)
 BuildRequires: pkgconfig(gl)
 BuildRequires: pkgconfig(egl)
-%if 0%{?use_system_jsoncpp}
 BuildRequires: pkgconfig(jsoncpp)
-%endif
-%if 0%{?use_system_ffmpeg}
-BuildRequires: pkgconfig(libavcodec)
-BuildRequires: pkgconfig(libavformat)
-BuildRequires: pkgconfig(libavutil)
-%global system_ffmpeg_flag -system-ffmpeg
-%endif
 BuildRequires: pkgconfig(libpng)
 BuildRequires: pkgconfig(libudev)
-%if 0%{?use_system_libwebp}
 BuildRequires: pkgconfig(libwebp) >= 0.6.0
-%endif
 BuildRequires: pkgconfig(harfbuzz)
 BuildRequires: pkgconfig(libdrm)
 BuildRequires: pkgconfig(opus)
 BuildRequires: pkgconfig(libevent)
 BuildRequires: pkgconfig(poppler-cpp)
 BuildRequires: pkgconfig(zlib)
-%if 0%{?fedora} && 0%{?fedora} < 30
-BuildRequires: pkgconfig(minizip)
-%else
 BuildConflicts: minizip-devel
 Provides: bundled(minizip) = 1.2
-%endif
 BuildRequires: pkgconfig(x11)
 BuildRequires: pkgconfig(xi)
 BuildRequires: pkgconfig(xcursor)
@@ -215,6 +195,12 @@ BuildRequires: %{__python3}
 BuildRequires: python3-html5lib
 %if 0%{?use_system_libvpx}
 BuildRequires: pkgconfig(vpx) >= 1.8.0
+%endif
+%if 0%{?use_system_ffmpeg}
+BuildRequires: pkgconfig(libavcodec)
+BuildRequires: pkgconfig(libavformat)
+BuildRequires: pkgconfig(libavutil)
+%global system_ffmpeg_flag -system-ffmpeg
 %endif
 
 # extra (non-upstream) functions needed, see
@@ -273,9 +259,6 @@ Provides: bundled(libjingle)
 Provides: bundled(libsrtp) = 2.2.0
 %if !0%{?use_system_libvpx}
 Provides: bundled(libvpx) = 1.8.2
-%endif
-%if !0%{?use_system_libwebp}
-Provides: bundled(libwebp) = 1.1.0-28-g55a080e5
 %endif
 # bundled as "libxml"
 # see src/3rdparty/chromium/third_party/libxml/linux/include/libxml/xmlversion.h
@@ -378,12 +361,13 @@ popd
 
 %patch -P35 -p1 -b .c99
 
-%patch -P61 -p1
-%patch -P62 -p1
-%patch -P63 -p1            
-%patch -P64 -p1            
-%patch -P65 -p1
+%patch -P70 -p1
+%patch -P71 -p1
+%patch -P72 -p1
+%patch -P73 -p1
+%patch -P74 -p1
 
+%patch -P80 -p1
 # delete all "toolprefix = " lines from build/toolchain/linux/BUILD.gn, as we
 # never cross-compile in native Fedora RPMs, fixes ARM and aarch64 FTBFS
 sed -i -e '/toolprefix = /d' -e 's/\${toolprefix}//g' \
@@ -468,6 +452,9 @@ echo "%{_libdir}/%{name}" \
 
 
 %changelog
+* Thu Feb 13 2025 Sérgio Basto <sergio@serjux.com> - 5.15.18-1
+- 5.15.18
+
 * Tue Jan 28 2025 RPM Fusion Release Engineering <sergiomb@rpmfusion.org> - 5.15.17-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_42_Mass_Rebuild
 
