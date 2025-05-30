@@ -55,7 +55,7 @@
 Summary: Qt5 - QtWebEngine components (freeworld version)
 Name:    qt5-qtwebengine-freeworld
 Version: 5.15.18
-Release: 1%{?dist}
+Release: 2%{?dist}
 
 %global major_minor %(echo %{version} | cut -d. -f-2)
 %global major %(echo %{version} | cut -d. -f1)
@@ -133,7 +133,6 @@ BuildRequires: cmake
 BuildRequires: bison
 BuildRequires: flex
 BuildRequires: gcc-c++
-BuildRequires: binutils-gold
 # gn links statically (for now)
 BuildRequires: libstdc++-static
 BuildRequires: git-core
@@ -415,7 +414,7 @@ export NINJA_PATH=%{__ninja}
 
 %{qmake_qt5} \
   %{?debug_config:CONFIG+="%{debug_config}}" \
-  CONFIG+="link_pulseaudio use_gold_linker" \
+  CONFIG+="link_pulseaudio" \
   %{?system_ffmpeg_flag:QMAKE_EXTRA_ARGS+="%{?system_ffmpeg_flag}"} \
   QMAKE_EXTRA_ARGS+="-proprietary-codecs" \
   %{?use_system_libicu:QMAKE_EXTRA_ARGS+="-system-webengine-icu"} \
@@ -452,6 +451,10 @@ echo "%{_libdir}/%{name}" \
 
 
 %changelog
+* Fri May 30 2025 Ankur Sinha <ankursinha AT fedoraproject DOT org> - 5.15.18-2
+- Switch to ld.bfd
+- Rebuild for qt 5.15.17
+
 * Thu Feb 13 2025 Sérgio Basto <sergio@serjux.com> - 5.15.18-1
 - 5.15.18
 
