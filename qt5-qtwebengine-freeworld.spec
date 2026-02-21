@@ -54,8 +54,8 @@
 
 Summary: Qt5 - QtWebEngine components (freeworld version)
 Name:    qt5-qtwebengine-freeworld
-Version: 5.15.18
-Release: 4%{?dist}
+Version: 5.15.19
+Release: 1%{?dist}
 
 %global major_minor %(echo %{version} | cut -d. -f-2)
 %global major %(echo %{version} | cut -d. -f1)
@@ -94,13 +94,12 @@ Patch32: qtwebengine-skia-missing-includes.patch
 Patch34: qtwebengine-fix-build.patch
 # https://src.fedoraproject.org/rpms/qt5-qtwebengine/c/628adfbb0613c892b91689d0db85de631d04fdae?branch=rawhide
 Patch35: qt5-qtwebengine-c99.patch
+Patch36: qtwebengine-chromium-141-glibc-2.42-SYS_SECCOMP.patch
 
 # Fix build
 Patch70: qtwebengine-5.15.13_p20240322-ninja1.12.patch
 Patch71: fix_build_pdf_extension_util.patch
-Patch72: python3.12-imp.patch
 Patch73: python3.12-six.patch
-Patch74: python3.13-pipes.patch
 
 # Fix building with ICU 75
 # https://gitlab.archlinux.org/archlinux/packaging/packages/qt5-webengine/-/blob/97c4d298f/qt5-webengine-icu-75.patch
@@ -357,14 +356,15 @@ popd
 %patch -P24 -p1 -b .aarch64-new-stat
 %patch -P32 -p1 -b .skia-missing-includes
 %patch -P34 -p1 -b .gcc-13
-
 %patch -P35 -p1 -b .c99
+
+%if 0%{?fedora} > 43
+%patch -P36 -p1 -b .chromium-141-glibc-2.42-SYS_SECCOMP
+%endif
 
 %patch -P70 -p1
 %patch -P71 -p1
-%patch -P72 -p1
 %patch -P73 -p1
-%patch -P74 -p1
 
 %patch -P80 -p1
 # delete all "toolprefix = " lines from build/toolchain/linux/BUILD.gn, as we
@@ -451,6 +451,9 @@ echo "%{_libdir}/%{name}" \
 
 
 %changelog
+* Sat Feb 21 2026 Leigh Scott <leigh123linux@gmail.com> - 5.15.19-1
+- 5.15.19
+
 * Mon Feb 02 2026 RPM Fusion Release Engineering <sergiomb@rpmfusion.org> - 5.15.18-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_44_Mass_Rebuild
 
