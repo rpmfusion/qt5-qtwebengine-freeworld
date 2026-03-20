@@ -55,7 +55,7 @@
 Summary: Qt5 - QtWebEngine components (freeworld version)
 Name:    qt5-qtwebengine-freeworld
 Version: 5.15.19
-Release: 1%{?dist}
+Release: 2%{?dist}
 
 %global major_minor %(echo %{version} | cut -d. -f-2)
 %global major %(echo %{version} | cut -d. -f1)
@@ -451,6 +451,9 @@ echo "%{_libdir}/%{name}" \
 
 
 %changelog
+* Fri Mar 20 2026 Nicolas Chauvet <kwizart@gmail.com> - 5.15.19-2
+- Rebuilt for libvpx-1.16.0
+
 * Sat Feb 21 2026 Leigh Scott <leigh123linux@gmail.com> - 5.15.19-1
 - 5.15.19
 
